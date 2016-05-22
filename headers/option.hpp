@@ -40,7 +40,7 @@ class option: public option_ {
     static const int skip_count = 1;
 public:
     template<std::size_t N>
-    constexpr option(const char (&long_name)[N], const char short_name):
+    constexpr option(const char (&long_name)[N], const char short_name = 0):
         option_(long_name, short_name),
         value(), default_value() {}
     template<std::size_t N>
@@ -48,6 +48,15 @@ public:
         option_(long_name, short_name),
         value(), default_value(default_value),
         has_default_value(true) {}
+};
+
+template<>
+class option<void>: public option_ {
+    static const int skip_count = 0;
+public:
+    template<std::size_t N>
+    constexpr option(const char (&long_name)[N], const char short_name = 0):
+        option_(long_name, short_name) {}
 };
 
 #endif

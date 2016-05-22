@@ -8,5 +8,8 @@ int main() {
     //constexpr option<int> opt4("Pippo", 'P');
     constexpr option<int> opt5("pippo", 'p', 10);
     constexpr option<int> opt6("pluto", 0, 10);
-    constexpr option<int> opt7("pluto_", 0, 10);
+    //constexpr option<int> opt7("pluto_", 0, 10);
+    constexpr option<int> opt8("pluto");
+    constexpr option<void> opt9("pluto");
+    constexpr option<void> opt10("pluto", 'c');
 }
