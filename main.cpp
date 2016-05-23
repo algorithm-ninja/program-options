@@ -1,15 +1,22 @@
 #include "headers/option.hpp"
-#include <type_traits>
+#include "headers/positional.hpp"
+#include "headers/command.hpp"
 
 int main() {
-    constexpr option<int> opt1("box-id", "Id of the sandbox", 'b');
-    constexpr option<int> opt2("root-path", "Path where we will put the sandboxes", 'r');
-    //constexpr option<int> opt3("root_path", "Path where we will put the sandboxes", 'r');
-    //constexpr option<int> opt4("Pippo", "Path where we will put the sandboxes", 'r');
-    constexpr option<int> opt5("pippo", "blabla", 'p', 10);
-    constexpr option<int> opt6("pluto", "blabla", 0, 10);
-    //constexpr option<int> opt7("pluto_", "blabla", 0, 10);
-    constexpr option<int> opt8("pluto", "blabla");
-    constexpr option<void> opt9("pluto", "blabla");
-    constexpr option<void> opt10("pluto", "blabla", 'c');
+    constexpr auto subcommand = create_command(
+        "build",
+        "Build subcommand",
+        positional<int, 3>("prova3", "Argument repeated three times"),
+        option<int>("box-id", "Id of the sandbox", 'b'));
+        
+    constexpr auto command = create_command(
+        "main",
+        "Main command",
+        option<int>("box-id", "Id of the sandbox", 'b'),
+        option<int>("root-path", "Path where we will put the sandboxes", 'r'),
+//      option<int>("root_path", "Path where we will put the sandboxes", 'r'),
+        option<int>("pippo", "blabla", 'p', 10),
+        option<void>("prova", "blabla", 'c'),
+//      positional<int, 1, 10>("prova1to10", "Argument repeatable up to 10 times"),
+        subcommand);
 }
