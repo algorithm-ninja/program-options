@@ -4,6 +4,8 @@
 #include <ostream>
 #include <iomanip>
 
+namespace program_options {
+
 template<typename opt, typename T>
 class option {
     T value;
@@ -51,4 +53,5 @@ public:
     }
 };
 
+} // namespace program_options
 #endif

@@ -5,6 +5,8 @@
 #include <utility>
 #include <tuple>
 
+
+namespace program_options {
 #define CHECK(cond, msg) (cond) || (throw std::logic_error(msg), true)
 
 class parse_error: public std::runtime_error {
@@ -134,4 +136,6 @@ void for_each(Tuple&& tuple, F&& f) {
     for_each_impl(std::forward<Tuple>(tuple), std::forward<F>(f),
                   std::make_index_sequence<N>{});
 }
+} // namespace program_options
+
 #endif

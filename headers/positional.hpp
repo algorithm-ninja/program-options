@@ -4,6 +4,8 @@
 #include <vector>
 #include <array>
 
+namespace program_options {
+
 // We assume that specifying up != low means we want an arbitrary number of arguments,
 // and use up as the maximum number of parameters we want to support.
 
@@ -25,4 +27,6 @@ public:
         return out;
     }
 };
+
+} // namespace program_options
 #endif

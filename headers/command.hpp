@@ -5,6 +5,7 @@
 #include "positional.hpp"
 #include <tuple>
 
+namespace program_options {
 template<typename...>
 class command {};
 
@@ -43,7 +44,8 @@ public:
             if (decltype(p)::min_num != decltype(p)::max_num) {
                 out << "[";
                 decltype(p)::name::write_long_name(out, false);
-                out << " ...] ";
+                if (decltype(p)::min_num + 1 != decltype(p)::max_num) out << " ...] ";
+                else out << "] ";
             }
         });
         if (sizeof...(Commands) > 0)
@@ -144,4 +146,5 @@ constexpr auto create_command(const Args&... args) {
     return create_command_impl<opt>(0, std::tuple<>(), std::tuple<>(), std::tuple<>(), args...);
 }
 
+} // namespace program_options
 #endif
