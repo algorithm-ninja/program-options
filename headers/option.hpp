@@ -37,6 +37,7 @@ class option<opt, void> {
     static const int skip_count = 0;
     bool parsed = false;
 public:
+    typedef opt name;
     constexpr option(){}
     std::ostream& help_line(std::ostream& out) const {
         if (opt::short_name) {

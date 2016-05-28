@@ -6,6 +6,29 @@
 #include <tuple>
 
 namespace program_options {
+template <std::size_t N>
+bool constexpr has_option(std::tuple<> t, const char (&s)[N]) {
+    return false;
+}
+
+template <std::size_t N, typename Tuple>
+bool constexpr has_option(Tuple t, const char (&s)[N]) {
+    if (streq(std::remove_reference<decltype(std::get<0>(t))>::type::name::name, s)) return true;
+    return has_option(tail(t), s);
+}
+
+template <typename Tuple>
+bool constexpr has_duplicates(Tuple t) {
+    if (has_option(tail(t), std::remove_reference<decltype(std::get<0>(t))>::type::name::name))
+        return true;
+    return has_duplicates(tail(t));
+}
+
+template <>
+bool constexpr has_duplicates(std::tuple<> t) {
+    return false;
+}
+
 template<typename...>
 class command {};
 
@@ -22,6 +45,9 @@ public:
         const std::tuple<Commands...>& commands):
         options(options), positionals(positionals), commands(commands) {
         static_assert(sizeof...(Commands) == 0 || sizeof...(Positionals) == 0, "You cannot have both positional arguments and subcommands!");
+        CHECK(!has_duplicates(options), "You cannot give duplicated options!");
+        CHECK(!has_duplicates(positionals), "You cannot give duplicated positional arguments!");
+        CHECK(!has_duplicates(commands), "You cannot give duplicated subcommands!");
     }
     std::ostream& help_line(std::ostream& out) const {
         out << "       ";

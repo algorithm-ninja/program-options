@@ -90,6 +90,15 @@ static constexpr std::size_t strlen(const char (&s)[l]) {
     return l;
 }
 
+template<std::size_t N, std::size_t M>
+static constexpr bool streq(const char (&s1)[N], const char (&s2)[M]) {
+    if (N != M) return false;
+    for (unsigned i=0; i<N; i++)
+        if (s1[i] != s2[i])
+            return false;
+    return true;
+}
+
 #define DEFINE_OPTION_3(optn, optd, opts) \
 struct _##optn { \
     static constexpr const char name[] = #optn;\
@@ -135,6 +144,16 @@ void for_each(Tuple&& tuple, F&& f) {
     constexpr std::size_t N = std::tuple_size<std::remove_reference_t<Tuple>>::value;
     for_each_impl(std::forward<Tuple>(tuple), std::forward<F>(f),
                   std::make_index_sequence<N>{});
+}
+
+template <std::size_t... Ns, typename... Ts>
+auto constexpr tail_impl(std::index_sequence<Ns...>, std::tuple<Ts...> t) {
+   return  std::make_tuple(std::get<Ns+1u>(t)...);
+}
+
+template <typename... Ts>
+auto constexpr tail(std::tuple<Ts...> t) {
+   return tail_impl(std::make_index_sequence<sizeof...(Ts) - 1u>(), t);
 }
 } // namespace program_options
 

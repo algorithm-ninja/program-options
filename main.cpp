@@ -25,6 +25,7 @@ constexpr auto main_command = create_command<_main>(
     option<_box_id, int>(),
     option<_root_path, int>(),
     option<_defaulted_option, int>(10),
+//    option<_defaulted_option, int>(10),
     option<_void_option, void>(),
     subcommand);
 } // namespace program_options
