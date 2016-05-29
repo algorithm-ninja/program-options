@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace program_options {
-DEFINE_OPTION(help, "This message");
+DEFINE_OPTION(help, "This message", 'h');
 DEFINE_OPTION(prova3, "Argument repeated three times");
 DEFINE_OPTION(prova1to2, "Argument repeated 1 to 2 times");
 DEFINE_OPTION(prova1to3, "Argument repeated 1 to 3 times");
@@ -32,14 +32,19 @@ DEFINE_COMMAND(main, "Main command",
 
 template<>
 void command_callback(const decltype(main_command)& mc) {
-
+    if (mc.has_option<_help>()) {
+        mc.print_help(std::cerr);
+        exit(1);
+    }
 }
 
 template<>
 void command_callback(const decltype(main_command)& mc, const decltype(build_command)& bc) {
-
+    if (bc.has_option<_help>()) {
+        bc.print_help(std::cerr);
+        exit(1);
+    }
 }
-
 } // namespace program_options
 
 int main(int argc, const char** argv) {

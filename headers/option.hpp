@@ -3,6 +3,7 @@
 #include "util.hpp"
 #include <ostream>
 #include <iomanip>
+#include <iostream>
 
 namespace program_options {
 
@@ -34,6 +35,11 @@ public:
         value = from_char_ptr<T>(arg);
         parsed = true;
     }
+    T get() const {
+        if (parsed) return value;
+        if (has_default_value) return default_value;
+        throw std::logic_error("You cannot get an option that was not parsed!");
+    }
 };
 
 template<typename opt>
@@ -59,6 +65,9 @@ public:
     }
     void parse(const char* arg) {
         parsed = true;
+    }
+    constexpr void get() const {
+        throw std::logic_error("You cannot get an option with no argument!");
     }
 };
 

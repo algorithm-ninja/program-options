@@ -13,11 +13,11 @@ namespace program_options {
 template<typename opt, typename T, std::size_t low = 1, std::size_t up = low>
 class positional {
     std::array<T, up> values;
-    size_t parsed_num = 0;
 public:
     typedef opt name;
     static constexpr size_t min_num = low;
     static constexpr size_t max_num = up;
+    size_t parsed_num = 0;
     constexpr positional(): values() {
         static_assert(low <= up, "The lower bound on the number of argument must not be greater than the upper bound!");
     }
@@ -39,6 +39,9 @@ public:
     void check() const {
         if (parsed_num < low)
             throw parse_error("Some required positional arguments for " + std::string(opt::get_name()) + " are missing!");
+    }
+    std::vector<T> get() const {
+        return {values.begin(), values.begin()+parsed_num};
     }
 };
 

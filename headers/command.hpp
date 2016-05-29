@@ -54,6 +54,24 @@ bool constexpr has_short_duplicates(std::tuple<> t) {
     return false;
 }
 
+template<typename T, typename Tuple>
+struct get_with_name_helper {
+    static size_t constexpr value = streq(cleanup<decltype(std::get<0>(Tuple()))>::type::name::name, T::name) ? 0 : get_with_name_helper<T, decltype(tail(Tuple()))>::value+1;
+};
+
+template<typename T>
+struct get_with_name_helper<T, std::tuple<>> {
+    static constexpr size_t value = -1;
+    constexpr get_with_name_helper() {
+        CHECK(false, "There is no option with this name!");
+    }
+};
+
+template<typename T, typename Tuple>
+const auto& get_with_name(const Tuple& t) {
+    return std::get<get_with_name_helper<T, Tuple>::value>(t);
+}
+
 template<typename T, typename... Args>
 void command_callback(const T&, const Args&...) {
     static_assert(dFalse<T>(), "Some (sub)command has no callback!");
@@ -154,6 +172,7 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>, std::tupl
     }
     template<typename... Supercommands>
     void parse_with_subcommand(int argc, const char** argv, const Supercommands&... sc) {
+        bool has_subcommand = false;
         for (int i=1; i<argc; i++) {
             if (argv[i][0] == '-') {
                 i += parse_option(argc-i, argv+i);
@@ -167,8 +186,10 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>, std::tupl
                 c->parse(argc-i, argv+i, sc..., *this);
             });
             if (!parsed) throw parse_error("Unknown subcommand " + std::string(argv[i]) + " given!");
+            has_subcommand = true;
             break;
         }
+        if (!has_subcommand) throw parse_error("You must specify a subcommand!\n");
     }
 public:
     typedef opt name;
@@ -240,6 +261,22 @@ public:
             print_help(std::cerr);
             return false;
         }
+    }
+    template<typename T>
+    bool has_option() const {
+        return get_with_name<T>(options).parsed;
+    }
+    template<typename T>
+    size_t count_positional() const {
+        return get_with_name<T>(positionals).parsed_num;
+    }
+    template<typename T>
+    auto get_option() const {
+        return get_with_name<T>(options).get();
+    }
+    template<typename T>
+    auto get_positional() const {
+        return get_with_name<T>(positionals).get();
     }
 };
 
