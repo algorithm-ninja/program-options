@@ -10,8 +10,11 @@ namespace program_options {
 #define CHECK(cond, msg) (cond) || (throw std::logic_error(msg), true)
 
 class parse_error: public std::runtime_error {
+    std::string message;
 public:
-    parse_error(const char* msg): std::runtime_error(msg) {}
+    parse_error(const char* msg): std::runtime_error(""), message(msg) {}
+    parse_error(const std::string& s): std::runtime_error(""), message(s) {}
+    const char* what() const noexcept override {return message.c_str();}
 };
 
 template<typename T>
@@ -21,47 +24,74 @@ T from_char_ptr(const char* ptr) {
 
 template<>
 int from_char_ptr(const char* ptr) {
-    return std::stoi(ptr);
+    std::size_t cnt;
+    auto res = std::stoi(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid integer given!");
+    return res;
 }
 
 template<>
 long from_char_ptr(const char* ptr) {
-    return std::stol(ptr);
+    std::size_t cnt;
+    auto res = std::stol(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid long given!");
+    return res;
 }
 
 template<>
 long long from_char_ptr(const char* ptr) {
-    return std::stoll(ptr);
+    std::size_t cnt;
+    auto res = std::stoll(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid long long given!");
+    return res;
 }
 
 template<>
 unsigned from_char_ptr(const char* ptr) {
-    return std::stoul(ptr);
+    std::size_t cnt;
+    auto res = std::stoul(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned given!");
+    return res;
 }
 
 template<>
 unsigned long from_char_ptr(const char* ptr) {
-    return std::stoul(ptr);
+    std::size_t cnt;
+    auto res = std::stoul(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned long given!");
+    return res;
 }
 
 template<>
 unsigned long long from_char_ptr(const char* ptr) {
-    return std::stoull(ptr);
+    std::size_t cnt;
+    auto res = std::stoull(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned long long given!");
+    return res;
 }
 
 template<>
 float from_char_ptr(const char* ptr) {
-    return std::stof(ptr);
+    std::size_t cnt;
+    auto res = std::stof(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid float given!");
+    return res;
 }
 
 template<>
 double from_char_ptr(const char* ptr) {
-    return std::stod(ptr);
+    std::size_t cnt;
+    auto res = std::stod(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid double given!");
+    return res;
 }
 
 template<>
 long double from_char_ptr(const char* ptr) {
-    return std::stold(ptr);
+    std::size_t cnt;
+    auto res = std::stold(ptr, &cnt);
+    if (ptr[cnt] != 0) throw parse_error("Invalid integer given!");
+    return res;
 }
 
 static constexpr bool is_lower_letter(const char c) {
@@ -124,6 +154,24 @@ struct _##optn { \
         for (unsigned i=sizeof(#optn); i<max_width*pad; i++) \
             out << ' ';\
     } \
+    static bool matches(const char* ptr) { \
+        for (unsigned i=0; i<sizeof(#optn); i++) \
+            if (ptr[i] != #optn[i]) \
+                return false; \
+        return true; \
+    } \
+    static bool matches(const char shn) { \
+        return shn == opts; \
+    } \
+    static constexpr const char* get_name() { \
+        return #optn;\
+    }\
+    static constexpr const char* get_description() { \
+        return optd;\
+    }\
+    static constexpr const char get_short_name() { \
+        return opts;\
+    }\
 };
 
 #define DEFINE_OPTION_2(on, od) DEFINE_OPTION_3(on, od, 0)
@@ -146,6 +194,21 @@ void for_each(Tuple&& tuple, F&& f) {
                   std::make_index_sequence<N>{});
 }
 
+template <typename Tuple, typename F, std::size_t ...Indices>
+void for_each_impl_rev(Tuple&& tuple, F&& f, std::index_sequence<Indices...>) {
+    using swallow = int[];
+    (void)swallow{1,
+        (f(std::get<sizeof...(Indices)-Indices-1>(std::forward<Tuple>(tuple))), void(), int{})...
+    };
+}
+
+template <typename Tuple, typename F>
+void for_each_rev(Tuple&& tuple, F&& f) {
+    constexpr std::size_t N = std::tuple_size<std::remove_reference_t<Tuple>>::value;
+    for_each_impl_rev(std::forward<Tuple>(tuple), std::forward<F>(f),
+                      std::make_index_sequence<N>{});
+}
+
 template <std::size_t... Ns, typename... Ts>
 auto constexpr tail_impl(std::index_sequence<Ns...>, std::tuple<Ts...> t) {
    return  std::make_tuple(std::get<Ns+1u>(t)...);
@@ -154,6 +217,16 @@ auto constexpr tail_impl(std::index_sequence<Ns...>, std::tuple<Ts...> t) {
 template <typename... Ts>
 auto constexpr tail(std::tuple<Ts...> t) {
    return tail_impl(std::make_index_sequence<sizeof...(Ts) - 1u>(), t);
+}
+
+template<typename Type>
+struct cleanup {
+    typedef typename std::remove_pointer<typename std::remove_reference<Type>::type>::type type;
+};
+
+template<typename T>
+bool constexpr dFalse() {
+    return false;
 }
 } // namespace program_options
 
