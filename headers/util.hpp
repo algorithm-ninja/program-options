@@ -13,61 +13,74 @@ namespace program_options {
 class parse_error: public std::runtime_error {
     std::string message;
 public:
-    parse_error(const char* msg): std::runtime_error(""), message(msg) {}
-    parse_error(const std::string& s): std::runtime_error(""), message(s) {}
+    explicit parse_error(const char* msg): std::runtime_error(""), message(msg) {}
+    explicit parse_error(std::string s): std::runtime_error(""), message(std::move(s)) {}
     const char* what() const noexcept override {return message.c_str();}
 };
 
+
 template<typename T>
-T from_char_ptr(const char* ptr) {
-    return ptr;
+static inline T from_char_ptr(const char* ptr) {
+    return T(ptr);
 }
 
 template<>
-int from_char_ptr(const char* ptr) {
+int from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stoi(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid integer given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid integer given!");
+    }
     return res;
 }
 
 template<>
-long from_char_ptr(const char* ptr) {
+long from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stol(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid long given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid long given!");
+    }
     return res;
 }
 
 template<>
-long long from_char_ptr(const char* ptr) {
+long long from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stoll(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid long long given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid long long given!");
+    }
     return res;
 }
 
 template<>
-unsigned from_char_ptr(const char* ptr) {
+unsigned from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stoul(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid unsigned given!");
+    }
     return res;
 }
 
 template<>
-unsigned long from_char_ptr(const char* ptr) {
+unsigned long from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stoul(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned long given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid unsigned long given!");
+    }
     return res;
 }
 
 template<>
-unsigned long long from_char_ptr(const char* ptr) {
+unsigned long long from_char_ptr(const char* ptr) { // NOLINT
     std::size_t cnt;
     auto res = std::stoull(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid unsigned long long given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid unsigned long long given!");
+    }
     return res;
 }
 
@@ -75,7 +88,9 @@ template<>
 float from_char_ptr(const char* ptr) {
     std::size_t cnt;
     auto res = std::stof(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid float given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid float given!");
+    }
     return res;
 }
 
@@ -83,7 +98,9 @@ template<>
 double from_char_ptr(const char* ptr) {
     std::size_t cnt;
     auto res = std::stod(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid double given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid double given!");
+    }
     return res;
 }
 
@@ -91,7 +108,9 @@ template<>
 long double from_char_ptr(const char* ptr) {
     std::size_t cnt;
     auto res = std::stold(ptr, &cnt);
-    if (ptr[cnt] != 0) throw parse_error("Invalid integer given!");
+    if (ptr[cnt] != 0) {
+        throw parse_error("Invalid integer given!");
+    }
     return res;
 }
 
@@ -107,11 +126,12 @@ static constexpr bool is_number(const char c) {
 template<std::size_t N>
 static constexpr bool is_long_name_valid(const char (&ln)[N]) {
     if (!is_lower_letter(ln[0])) return false;
-    for (unsigned i=0; i<N-1; i++)
-        if (!(is_lower_letter(ln[i]) || is_upper_letter(ln[i]) || is_number(ln[i]) || ln[i] == '_'))
+    for (unsigned i=0; i<N-1; i++) {
+        if (!(is_lower_letter(ln[i]) || is_upper_letter(ln[i]) || is_number(ln[i]) || ln[i] == '_')) {
             return false;
-    if (ln[N-2] == '_') return false;
-    return true;
+        }
+    }
+    return ln[N-2] != '_';
 }
 static constexpr bool is_short_name_valid(char sn) {
     return is_lower_letter(sn) || is_upper_letter(sn) || sn == 0;
@@ -124,9 +144,9 @@ static constexpr std::size_t strlen(const char (&s)[l]) {
 template<std::size_t N, std::size_t M>
 static constexpr bool streq(const char (&s1)[N], const char (&s2)[M]) {
     if (N != M) return false;
-    for (unsigned i=0; i<N; i++)
-        if (s1[i] != s2[i])
-            return false;
+    for (unsigned i=0; i<N; i++) {
+        if (s1[i] != s2[i]) return false;
+    }
     return true;
 }
 
@@ -142,10 +162,10 @@ struct _##optn { \
         static_assert(is_short_name_valid(short_name), "Invalid short name given!");\
     } \
     static void write_short_name(std::ostream& out) { \
-        out << opts; \
+        out << (opts); \
     } \
     static void write_description(std::ostream& out) { \
-        out << optd; \
+        out << (optd); \
     } \
     static void write_long_name(std::ostream& out, bool pad = true) { \
         for (unsigned i=0; i<sizeof(#optn); i++) { \
@@ -162,16 +182,16 @@ struct _##optn { \
         return true; \
     } \
     static bool matches(const char shn) { \
-        return shn == opts; \
+        return shn == (opts); \
     } \
     static constexpr const char* get_name() { \
         return #optn;\
     }\
     static constexpr const char* get_description() { \
-        return optd;\
+        return (optd);\
     }\
     static constexpr const char get_short_name() { \
-        return opts;\
+        return (opts);\
     }\
 };
 

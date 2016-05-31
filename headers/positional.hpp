@@ -29,16 +29,18 @@ public:
         return out;
     }
     void parse(const char** first, const char** last) {
-        if (last - first > (long long) up)
+        if (last > first + up) {
             throw parse_error("Too many positional arguments given!");
+        }
         for (size_t i=0; first+i < last; i++) {
             values[i] = from_char_ptr<T>(first[i]);
             parsed_num++;
         }
     }
     void check() const {
-        if (parsed_num < low)
+        if (parsed_num < low) {
             throw parse_error("Some required positional arguments for " + std::string(opt::get_name()) + " are missing!");
+        }
     }
     std::vector<T> get() const {
         return {values.begin(), values.begin()+parsed_num};

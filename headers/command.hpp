@@ -1,10 +1,10 @@
 #ifndef PO_COMMAND_HPP
 #define PO_COMMAND_HPP
-#include "util.hpp"
 #include "option.hpp"
 #include "positional.hpp"
-#include <tuple>
+#include "util.hpp"
 #include <iostream>
+#include <tuple>
 
 namespace program_options {
 template <std::size_t N>
@@ -20,8 +20,7 @@ bool constexpr has_option(Tuple t, const char (&s)[N]) {
 
 template <typename Tuple>
 bool constexpr has_duplicates(Tuple t) {
-    if (has_option(tail(t), cleanup<decltype(std::get<0>(t))>::type::name::name))
-        return true;
+    if (has_option(tail(t), cleanup<decltype(std::get<0>(t))>::type::name::name)) return true;
     return has_duplicates(tail(t));
 }
 
@@ -44,8 +43,7 @@ bool constexpr has_short_option(std::tuple<> t, const char s) {
 
 template <typename Tuple>
 bool constexpr has_short_duplicates(Tuple t) {
-    if (has_short_option(tail(t), cleanup<decltype(std::get<0>(t))>::type::name::short_name))
-        return true;
+    if (has_short_option(tail(t), cleanup<decltype(std::get<0>(t))>::type::name::short_name)) return true;
     return has_short_duplicates(tail(t));
 }
 
@@ -88,37 +86,38 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>, std::tupl
     std::tuple<Commands*...> commands;
     int parse_option(int argc, const char** argv) {
         CHECK(argv[0][0] == '-', "Invalid option given!");
+        int skip = 0;
         if (argv[0][1] == '-') {
             bool parsed = false;
-            int skip = 0;
             for_each(options, [&](auto& o) {
                 if (!cleanup<decltype(o)>::type::name::matches(argv[0]+2)) return;
                 CHECK(!parsed, "Something went wrong - an option was recognized twice!");
                 parsed = true;
                 skip = cleanup<decltype(o)>::type::skip_count;
-                if (argc < skip+1)
+                if (argc < skip+1) {
                     throw parse_error("Missing required argument for option " + std::string(argv[0]+2));
+                }
                 o.parse(argv[skip]);
             });
             if (!parsed) throw parse_error("Unknown option " + std::string(argv[0]) + " given!");
-            return skip;
         } else {
-            for (const char* cur = argv[0]+1; *cur; cur++) {
+            for (const char* cur = argv[0]+1; *cur != 0; cur++) {
                 bool parsed = false;
                 for_each(options, [&](auto& o) {
                     if (!cleanup<decltype(o)>::type::name::matches(*cur)) return;
                     CHECK(!parsed, "Something went wrong - a short option was recognized twice!");
                     parsed = true;
                     int skip = cleanup<decltype(o)>::type::skip_count;
-                    if (skip && !o.has_default_value)
+                    if (skip && !o.has_default_value) {
                         throw parse_error("An option that requires an argument was given in an option group!");
+                    }
                     // Register an option<void> as present.
-                    if (!skip) o.parse(argv[skip]);
+                    if (skip == 0) o.parse(argv[skip]);
                 });
                 if (!parsed) throw parse_error("Unknown option -" + std::string({*cur}) + " given!");
             }
-            return 0;
         }
+        return skip;
     }
     void check_positional() {
         for_each(positionals, [&](const auto& p) {
@@ -138,35 +137,41 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>, std::tupl
         std::size_t head_count = 0;
         bool found_variadic = false;
         for_each(positionals, [&](auto& p) {
-            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num)
+            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num) {
                 found_variadic = true;
+            }
             if (found_variadic) return;
             std::size_t next_head_count = head_count + cleanup<decltype(p)>::type::min_num;
-            if (next_head_count >= posargs.size())
+            if (next_head_count >= posargs.size()) {
                 throw parse_error("Too few positional arguments given!");
+            }
             p.parse(posargs.data()+head_count, posargs.data()+next_head_count);
             head_count = next_head_count;
         });
         if (!found_variadic) {
-            if (head_count < posargs.size())
+            if (head_count < posargs.size()) {
                 throw parse_error("Too many positional arguments given!");
+            }
             return check_positional();
         }
         found_variadic = false;
         std::size_t tail_count = 0;
         for_each_rev(positionals, [&](auto& p) {
-            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num)
+            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num) {
                 found_variadic = true;
+            }
             if (found_variadic) return;
             std::size_t next_tail_count = tail_count + cleanup<decltype(p)>::type::min_num;
-            if (next_tail_count >= posargs.size())
+            if (next_tail_count >= posargs.size()) {
                 throw parse_error("Too few positional arguments given!");
+            }
             p.parse(posargs.data()+posargs.size()-next_tail_count, posargs.data()+posargs.size()-tail_count);
             tail_count = next_tail_count;
         });
         for_each(positionals, [&](auto& p) {
-            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num)
+            if (cleanup<decltype(p)>::type::min_num != cleanup<decltype(p)>::type::max_num) {
                 p.parse(posargs.data()+head_count, posargs.data()+posargs.size()-tail_count);
+            }
         });
         check_positional();
     }
@@ -215,8 +220,9 @@ public:
         out << "Usage: ";
         opt::write_long_name(out, false);
         out << " ";
-        if (sizeof...(Options) > 0)
+        if (sizeof...(Options) > 0) {
             out << "[options] ";
+        }
         for_each(positionals, [&out](auto p) {
             for (unsigned i=0; i<decltype(p)::min_num; i++) {
                 decltype(p)::name::write_long_name(out, false);
@@ -225,12 +231,15 @@ public:
             if (decltype(p)::min_num != decltype(p)::max_num) {
                 out << "[";
                 decltype(p)::name::write_long_name(out, false);
-                if (decltype(p)::min_num + 1 != decltype(p)::max_num) out << " ...] ";
-                else out << "] ";
+                if (decltype(p)::min_num + 1 != decltype(p)::max_num) {
+                    out << " ...";
+                }
+                out << "] ";
             }
         });
-        if (sizeof...(Commands) > 0)
+        if (sizeof...(Commands) > 0) {
             out << "subcommand";
+        }
         out << std::endl;
         if (sizeof...(Options) + sizeof...(Positionals) > 0) {
             out << "Available options and arguments:" << std::endl;
@@ -251,8 +260,11 @@ public:
     template<typename... Supercommands>
     bool parse(int argc, const char** argv, const Supercommands&... sc) {
         try {
-            if (sizeof...(Commands) > 0) parse_with_subcommand(argc, argv, sc...);
-            else parse_with_positional(argc, argv, sc...);
+            if (sizeof...(Commands) > 0) {
+                parse_with_subcommand(argc, argv, sc...);
+            } else {
+                parse_with_positional(argc, argv, sc...);
+            }
             command_callback(sc..., *this);
             return true;
         } catch (parse_error& e) {

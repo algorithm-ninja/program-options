@@ -1,9 +1,9 @@
 #ifndef PO_OPTION_HPP
 #define PO_OPTION_HPP
 #include "util.hpp"
-#include <ostream>
 #include <iomanip>
 #include <iostream>
+#include <ostream>
 
 namespace program_options {
 
@@ -17,7 +17,8 @@ public:
     bool parsed = false;
     typedef opt name;
     constexpr option(): value(), default_value() {}
-    constexpr option(T default_value): value(), default_value(default_value), has_default_value(true) {}
+    explicit constexpr option(T default_value):
+        value(), default_value(default_value), has_default_value(true) {}
     std::ostream& help_line(std::ostream& out) const {
         if (opt::short_name) {
             out << " -";
@@ -49,7 +50,7 @@ public:
     bool has_default_value = true;
     bool parsed = false;
     typedef opt name;
-    constexpr option(){}
+    constexpr option() = default;
     std::ostream& help_line(std::ostream& out) const {
         if (opt::short_name) {
             out << " -";
