@@ -1,7 +1,9 @@
-Checks: '*,-google-readability-todo,-misc-unused-parameters,-readability-named-parameter,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-array-to-pointer-decay'
+Checks: '*,-google-readability-todo,-misc-unused-parameters,-readability-named-parameter,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-llvm-include-order'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: true
 CheckOptions:    
 - key:             readability-braces-around-statements.ShortStatementLines
+  value:           '2'
+- key:             google-readability-braces-around-statements.ShortStatementLines
   value:           '2'
 
