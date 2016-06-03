@@ -207,6 +207,7 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
             }
         });
         check_positional();
+        command_callback(sc..., *this);
     }
     template <typename... Supercommands>
     void parse_with_subcommand(int argc, const char** argv,
@@ -224,6 +225,7 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
                       "Something went wrong - a subcommand was recognized "
                       "twice!");
                 parsed = true;
+                command_callback(sc..., *this);
                 c->parse(argc - i, argv + i, sc..., *this);
             });
             if (!parsed) {
@@ -307,7 +309,6 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
             } else {
                 parse_with_positional(argc, argv, sc...);
             }
-            command_callback(sc..., *this);
             return true;
         } catch (parse_error& e) {
             std::cerr << "Error parsing the command line: " << e.what();
