@@ -128,14 +128,17 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
                           "Something went wrong - a short option was "
                           "recognized twice!");
                     parsed = true;
-                    int skip = cleanup<decltype(o)>::type::skip_count;
-                    if (skip && !o.has_default_value) {
+                    skip = cleanup<decltype(o)>::type::skip_count;
+                    if (skip && !o.has_default_value && argv[0][2] != 0) {
                         throw parse_error(
                             "An option that requires an argument was given in "
                             "an option group!");
                     }
-                    // Register an option<void> as present.
-                    if (skip == 0) o.parse(argv[skip]);
+                    if (argc < skip + 1) {
+                        throw parse_error("Missing required argument for option " +
+                                          std::string(argv[0] + 2));
+                    }
+                    o.parse(argv[skip]);
                 });
                 if (!parsed) {
                     throw parse_error("Unknown option -" + std::string({*cur}) +
