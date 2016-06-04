@@ -178,7 +178,7 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
             if (found_variadic) return;
             std::size_t next_head_count =
                 head_count + cleanup<decltype(p)>::type::min_num;
-            if (next_head_count >= posargs.size()) {
+            if (next_head_count > posargs.size()) {
                 throw parse_error("Too few positional arguments given!");
             }
             p.parse(posargs.data() + head_count,
@@ -201,7 +201,7 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
             if (found_variadic) return;
             std::size_t next_tail_count =
                 tail_count + cleanup<decltype(p)>::type::min_num;
-            if (next_tail_count >= posargs.size()) {
+            if (next_tail_count > posargs.size()) {
                 throw parse_error("Too few positional arguments given!");
             }
             p.parse(posargs.data() + posargs.size() - next_tail_count,
