@@ -189,7 +189,9 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
             if (head_count < posargs.size()) {
                 throw parse_error("Too many positional arguments given!");
             }
-            return check_positional();
+            check_positional();
+            command_callback(sc..., *this);
+            return;
         }
         found_variadic = false;
         std::size_t tail_count = 0;
