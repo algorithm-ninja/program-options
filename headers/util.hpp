@@ -26,6 +26,9 @@ static inline T from_char_ptr(const char* ptr) {
 }
 
 template <>
+int from_char_ptr(const char* ptr) __attribute((unused));  // NOLINT
+
+template <>
 int from_char_ptr(const char* ptr) {  // NOLINT
     std::size_t cnt;
     auto res = std::stoi(ptr, &cnt);
@@ -34,6 +37,9 @@ int from_char_ptr(const char* ptr) {  // NOLINT
     }
     return res;
 }
+
+template <>
+long from_char_ptr(const char* ptr) __attribute((unused));  // NOLINT
 
 template <>
 long from_char_ptr(const char* ptr) {  // NOLINT
@@ -46,6 +52,9 @@ long from_char_ptr(const char* ptr) {  // NOLINT
 }
 
 template <>
+long long from_char_ptr(const char* ptr) __attribute((unused));  // NOLINT
+
+template <>
 long long from_char_ptr(const char* ptr) {  // NOLINT
     std::size_t cnt;
     auto res = std::stoll(ptr, &cnt);
@@ -54,6 +63,9 @@ long long from_char_ptr(const char* ptr) {  // NOLINT
     }
     return res;
 }
+
+template <>
+unsigned from_char_ptr(const char* ptr) __attribute((unused));  // NOLINT
 
 template <>
 unsigned from_char_ptr(const char* ptr) {  // NOLINT
@@ -66,6 +78,9 @@ unsigned from_char_ptr(const char* ptr) {  // NOLINT
 }
 
 template <>
+unsigned long from_char_ptr(const char* ptr) __attribute((unused));  // NOLINT
+
+template <>
 unsigned long from_char_ptr(const char* ptr) {  // NOLINT
     std::size_t cnt;
     auto res = std::stoul(ptr, &cnt);
@@ -74,6 +89,10 @@ unsigned long from_char_ptr(const char* ptr) {  // NOLINT
     }
     return res;
 }
+
+template <>
+unsigned long long from_char_ptr(const char* ptr)
+    __attribute((unused));  // NOLINT
 
 template <>
 unsigned long long from_char_ptr(const char* ptr) {  // NOLINT
@@ -86,6 +105,9 @@ unsigned long long from_char_ptr(const char* ptr) {  // NOLINT
 }
 
 template <>
+float from_char_ptr(const char* ptr) __attribute((unused));
+
+template <>
 float from_char_ptr(const char* ptr) {
     std::size_t cnt;
     auto res = std::stof(ptr, &cnt);
@@ -96,6 +118,9 @@ float from_char_ptr(const char* ptr) {
 }
 
 template <>
+double from_char_ptr(const char* ptr) __attribute((unused));
+
+template <>
 double from_char_ptr(const char* ptr) {
     std::size_t cnt;
     auto res = std::stod(ptr, &cnt);
@@ -104,6 +129,9 @@ double from_char_ptr(const char* ptr) {
     }
     return res;
 }
+
+template <>
+long double from_char_ptr(const char* ptr) __attribute((unused));
 
 template <>
 long double from_char_ptr(const char* ptr) {
