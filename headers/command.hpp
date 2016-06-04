@@ -152,10 +152,19 @@ class command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
     void parse_with_positional(int argc, const char** argv,
                                const Supercommands&... sc) {
         std::vector<const char*> posargs;
+        bool positional_only = false;
         for (int i = 1; i < argc; i++) {
-            if (argv[i][0] == '-') {
-                i += parse_option(argc - i, argv + i);
-                continue;
+            if (argv[i][0] == '-' && !positional_only) {
+                // -- marks the end of options
+                if (argv[i][1] == '-' && argv[i][2] == 0) {
+                    positional_only = true;
+                    continue;
+                }
+                // Don't treat a single dash as an option.
+                if (argv[i][1] != 0) {
+                    i += parse_option(argc - i, argv + i);
+                    continue;
+                }
             }
             posargs.emplace_back(argv[i]);
         }
