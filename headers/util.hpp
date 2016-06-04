@@ -204,7 +204,8 @@ static constexpr bool streq(const char (&s1)[N], const char (&s2)[M]) {
         }                                                                   \
         static bool matches(const char* ptr) {                              \
             for (unsigned i = 0; i < sizeof(#optn); i++)                    \
-                if (ptr[i] != #optn[i]) return false;                       \
+                if (ptr[i] != #optn[i] &&                                   \
+                    (ptr[i] != '-' || #optn[i] != '_')) return false;       \
             return true;                                                    \
         }                                                                   \
         static bool matches(const char shn) { return shn == (opts); }       \
