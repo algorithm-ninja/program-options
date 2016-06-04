@@ -396,15 +396,15 @@ constexpr auto create_command_impl(std::size_t vpos,
 }
 
 template <typename opt, typename... Args>
-constexpr auto create_command(const Args&... args) {
+constexpr auto internal_create_command(const Args&... args) {
     return create_command_impl<opt>(0, std::tuple<>(), std::tuple<>(),
                                     std::tuple<>(), args...);
 }
 
-#define DEFINE_COMMAND(NAME, DESCRIPTION, ...)     \
-    DEFINE_OPTION(NAME, DESCRIPTION)               \
-    constexpr auto _po_internal_##NAME##_command = \
-        create_command<_##NAME>(__VA_ARGS__);      \
+#define DEFINE_COMMAND(NAME, DESCRIPTION, ...)         \
+    DEFINE_OPTION(NAME, DESCRIPTION)                   \
+    constexpr auto _po_internal_##NAME##_command =     \
+        internal_create_command<_##NAME>(__VA_ARGS__); \
     auto NAME##_command = _po_internal_##NAME##_command;
 
 }  // namespace program_options
