@@ -358,8 +358,9 @@ constexpr auto create_command_impl(std::size_t vpos,
     CHECK(vpos <= 1,
           "You cannot have multiple positional arguments with a non-fixed "
           "number of occurences!");
-    return command<opt, std::tuple<Options...>, std::tuple<Positionals...>,
-                   std::tuple<Commands...>>(opts, pos, coms);
+    return command<opt, std::tuple<std::decay_t<Options>...>,
+                   std::tuple<std::decay_t<Positionals>...>,
+                   std::tuple<std::decay_t<Commands>...>>(opts, pos, coms);
 }
 
 template <typename opt, typename... InnerArgs, typename... Args,
@@ -394,7 +395,7 @@ constexpr auto create_command_impl(std::size_t vpos,
                                    const std::tuple<Options...>& opts,
                                    const std::tuple<Positionals...>& pos,
                                    const std::tuple<Commands*...>& coms,
-                                   command<InnerArgs...>* const& c,
+                                   command<InnerArgs...>* c,
                                    const Args&... args) {
     return create_command_impl<opt>(
         vpos, opts, pos, std::tuple_cat(coms, std::make_tuple(c)), args...);
