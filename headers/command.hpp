@@ -397,14 +397,20 @@ constexpr auto create_command_impl(std::size_t vpos,
                                    const std::tuple<Commands*...>& coms,
                                    command<InnerArgs...>* c,
                                    const Args&... args) {
+    std::tuple<std::decay_t<Commands*>..., command<InnerArgs...>*> cmd_tuple = std::tuple_cat(coms, std::make_tuple(c));
     return create_command_impl<opt>(
-        vpos, opts, pos, std::tuple_cat(coms, std::make_tuple(c)), args...);
+        vpos, opts, pos, cmd_tuple, args...);
+}
+
+template <typename opt, typename... Args>
+constexpr auto internal_create_command_impl(const Args&... args) {
+    return create_command_impl<opt>(0, std::tuple<>(), std::tuple<>(),
+                                    std::tuple<>(), args...);
 }
 
 template <typename opt, typename... Args>
 constexpr auto internal_create_command(const Args&... args) {
-    return create_command_impl<opt>(0, std::tuple<>(), std::tuple<>(),
-                                    std::tuple<>(), args...);
+    return internal_create_command_impl<opt, std::decay_t<Args>...>(args...);
 }
 
 #define DEFINE_COMMAND(NAME, DESCRIPTION, ...)         \
